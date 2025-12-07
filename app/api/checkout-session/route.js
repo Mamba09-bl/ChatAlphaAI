@@ -19,8 +19,8 @@ export async function POST(req) {
         quantity: 1,
       },
     ],
-    success_url: `http://localhost:3000/payment-success?email=${email}&amount=49.99`,
-    cancel_url: "http://localhost:3000/checkout",
+    success_url: `${process.env.NEXTAUTH_URL}/payment-success?email=${email}&amount=${amount}`,
+    cancel_url: `${process.env.NEXTAUTH_URL}/plus`,
   });
 
   return Response.json({ url: session.url });
