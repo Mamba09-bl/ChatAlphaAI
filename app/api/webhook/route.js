@@ -52,14 +52,17 @@
 
 import Stripe from "stripe";
 import userModel from "@/modules/user";
+import { connectDB } from "@/lib/mongodb"; // ← ADD THIS
 
-export const runtime = "nodejs"; // raw body works only in nodejs runtime
+export const runtime = "nodejs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(req) {
+  await connectDB(); // ← ADD THIS
+
   const body = await req.text();
-  const signature = req.headers.get("stripe-signature"); // ← FIXED
+  const signature = req.headers.get("stripe-signature");
 
   let event;
 
@@ -87,8 +90,6 @@ export async function POST(req) {
       { hasPaid: true, freeMessagesUsed: 0 }
     );
   }
-
-  console.log("webhook called....");
 
   return new Response("OK", { status: 200 });
 }

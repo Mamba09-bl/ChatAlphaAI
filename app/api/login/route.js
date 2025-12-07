@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import userModel from "@/modules/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { connectDB } from "@/lib/mongodb"; // ← ADD THIS
 
 export async function POST(req) {
+  await connectDB(); // ← ADD THIS
+
   const SECRET = "MY_SUPER_SECRET_123";
   const { email, password } = await req.json();
 
@@ -26,8 +29,8 @@ export async function POST(req) {
   });
 
   res.cookies.set("token", token, {
-    httpOnly: false, // allows client-side JS to read it
-    secure: false, // must be false on localhost
+    httpOnly: false,
+    secure: false,
     sameSite: "lax",
     path: "/",
   });

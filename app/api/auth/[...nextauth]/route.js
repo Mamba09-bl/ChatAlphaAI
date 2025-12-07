@@ -1,39 +1,39 @@
-import userModel from "@/modules/user";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import userModel from "@/modules/user";
+import { connectDB } from "@/lib/mongodb";
 
-export const authoptions = NextAuth({
+export const authOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
     }),
   ],
-  call: {
+
+  callbacks: {
     async signIn({ user, account, profile }) {
-      // profile.sub = google unique id
-      // user.email = google email
-      // user.name = google name
+      await connectDB(); // IMPORTANT
 
       const existingUser = await userModel.findOne({ email: user.email });
 
       if (!existingUser) {
-        // create Google user
         await userModel.create({
           Username: user.name,
           email: user.email,
           provider: "google",
           providerId: profile.sub,
-          // no password field for google!
         });
       }
 
       return true;
     },
 
-    async session({ session, token }) {
+    async session({ session }) {
       return session;
     },
   },
-});
-export { authoptions as GET, authoptions as POST };
+};
+
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
