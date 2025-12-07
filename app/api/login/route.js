@@ -30,8 +30,8 @@ export async function POST(req) {
 
   res.cookies.set("token", token, {
     httpOnly: true,
-    secure: true,
-    sameSite: "lax",
+    secure: true, // required on HTTPS
+    sameSite: "none", // required on cross-site redirects
     path: "/",
   });
 
