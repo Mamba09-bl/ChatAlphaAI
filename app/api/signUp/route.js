@@ -32,8 +32,8 @@ export async function POST(req) {
   const res = NextResponse.json({ success: true, token }, { status: 201 });
 
   res.cookies.set("token", token, {
-    httpOnly: false,
-    secure: false,
+    httpOnly: true,
+    secure: true,
     sameSite: "lax",
     path: "/",
   });
