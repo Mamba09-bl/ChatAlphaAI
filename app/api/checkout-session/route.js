@@ -19,7 +19,7 @@ export async function POST(req) {
         quantity: 1,
       },
     ],
-    success_url: `${process.env.NEXTAUTH_URL}/payment-success?email=${email}&amount=${amount}`,
+    success_url: `${process.env.NEXTAUTH_URL}/payment-success?email=${email}&amount=49.99`,
     cancel_url: `${process.env.NEXTAUTH_URL}/plus`,
   });
 
