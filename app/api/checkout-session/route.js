@@ -1,14 +1,33 @@
 // app/api/checkout-session/route.js
 import Stripe from "stripe";
+import jwt from "jsonwebtoken";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const SECRET = "MY_SUPER_SECRET_123";
 
 export async function POST(req) {
-  const { email } = await req.json();
+  // Get the JWT token from cookieszzzzz
+  const token = req.cookies.get("token")?.value;
 
+  if (!token) {
+    return Response.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  // Decode user info
+  let decoded;
+  try {
+    decoded = jwt.verify(token, SECRET);
+  } catch (err) {
+    return Response.json({ error: "Invalid token" }, { status: 401 });
+  }
+
+  const email = decoded.email;
+  console.log("Creating Stripe session for:", email);
+
+  // Create Stripe checkout session
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    customer_email: email,
+    customer_email: email, // REQUIRED for webhook
     line_items: [
       {
         price_data: {

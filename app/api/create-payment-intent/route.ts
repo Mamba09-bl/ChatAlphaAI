@@ -4,7 +4,7 @@ import Stripe from "stripe";
 import jwt from "jsonwebtoken";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const JWT_SECRET = "MY_SUPER_SECRET_123"; // use same secret you use to sign your JWTs
+const JWT_SECRET = "MY_SUPER_SECRET_123"; // use same secret you use to sign your JWTsss
 
 export async function POST(req) {
   try {
