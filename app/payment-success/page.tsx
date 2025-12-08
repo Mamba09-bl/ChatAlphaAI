@@ -1,10 +1,7 @@
-import { Suspense } from "react";
-import PaymentSuccessClient from "./client";
+import dynamic from "next/dynamic";
+
+const PaymentSuccessClient = dynamic(() => import("./client"), { ssr: false });
 
 export default function Page() {
-  return (
-    <Suspense fallback={<div className="text-white p-6">Loading...</div>}>
-      <PaymentSuccessClient />
-    </Suspense>
-  );
+  return <PaymentSuccessClient />;
 }

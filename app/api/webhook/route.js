@@ -49,11 +49,13 @@
 
 //   return new Response(null, { status: 200 });
 // }
-import Stripe from "stripe";
-import userModel from "@/modules/user";
-import { connectDB } from "@/lib/mongodb";
 
-export const runtime = "nodejs"; // Required for raw bodyyy
+import Stripe from "stripe";
+import { connectDB } from "@/lib/mongodb";
+import userModel from "@/modules/user";
+
+export const runtime = "nodejs";
+export const config = { api: { bodyParser: false } };
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -61,40 +63,32 @@ export async function POST(req) {
   await connectDB();
 
   const body = await req.text();
-  const signature = req.headers.get("stripe-signature");
-
+  const sig = req.headers.get("stripe-signature");
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   let event;
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
 
-    console.log("WEBHOOK EVENT RECEIVED:", event.type);
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
-    console.log("❌ Webhook signature error:", err.message);
-    return new Response("Webhook signature error", { status: 400 });
+    console.error("Webhook signature verification failed:", err.message);
+    return new Response("Webhook signature verification failed", {
+      status: 400,
+    });
   }
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-
     const email = session.customer_email;
-    console.log("Stripe reports payment for:", email);
-
-    if (!email) {
-      console.log("❌ No email in session. Cannot update user.");
-      return new Response("OK", { status: 200 });
+    if (email) {
+      await userModel.findOneAndUpdate(
+        { email },
+        { $set: { hasPaid: true, freeMessagesUsed: 0 } }
+      );
+      console.log("Marked user paid:", email);
+    } else {
+      console.warn("No customer_email on session:", session.id);
     }
-
-    await userModel.findOneAndUpdate(
-      { email },
-      { hasPaid: true, freeMessagesUsed: 0 }
-    );
-
-    console.log("User upgraded successfully:", email);
   }
 
-  return new Response("OK", { status: 200 });
+  return new Response("ok", { status: 200 });
 }

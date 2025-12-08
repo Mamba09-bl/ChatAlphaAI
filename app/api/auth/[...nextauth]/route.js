@@ -1,3 +1,4 @@
+// app/api/auth/[...nextauth]/route.js
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import userModel from "@/modules/user";
@@ -10,14 +11,11 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_SECRET,
     }),
   ],
-
   callbacks: {
     async signIn({ user, account, profile }) {
-      await connectDB(); // IMPORTANT
-
-      const existingUser = await userModel.findOne({ email: user.email });
-
-      if (!existingUser) {
+      await connectDB();
+      const existing = await userModel.findOne({ email: user.email });
+      if (!existing) {
         await userModel.create({
           Username: user.name,
           email: user.email,
@@ -25,7 +23,6 @@ export const authOptions = {
           providerId: profile.sub,
         });
       }
-
       return true;
     },
 
@@ -33,6 +30,7 @@ export const authOptions = {
       return session;
     },
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
