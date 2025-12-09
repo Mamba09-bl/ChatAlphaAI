@@ -54,19 +54,18 @@ import Stripe from "stripe";
 import { connectDB } from "@/lib/mongodb";
 import userModel from "@/modules/user";
 
-export const runtime = "nodejs";
-export const config = { api: { bodyParser: false } };
+export const runtime = "nodejs"; // needed for raw body
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(req) {
   await connectDB();
 
-  const body = await req.text();
+  const body = await req.text(); // required for raw webhook body
   const sig = req.headers.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  let event;
 
+  let event;
   try {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
@@ -79,6 +78,7 @@ export async function POST(req) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const email = session.customer_email;
+
     if (email) {
       await userModel.findOneAndUpdate(
         { email },
@@ -86,7 +86,7 @@ export async function POST(req) {
       );
       console.log("Marked user paid:", email);
     } else {
-      console.warn("No customer_email on session:", session.id);
+      console.warn("No customer_email in event:", event.id);
     }
   }
 
