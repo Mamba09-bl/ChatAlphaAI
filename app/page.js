@@ -77,18 +77,6 @@ export default function VariantB() {
           </button>
         </form>
 
-        {/* Google Login Button */}
-        <div className="w-full mt-6 flex flex-col items-center gap-4">
-          <span className="text-gray-300 text-sm">Or continue with</span>
-
-          <button
-            onClick={() => signIn("google")}
-            className="flex items-center justify-center w-full bg-white text-[#254F1A] rounded-xl shadow-lg px-6 py-3 text-base font-semibold hover:bg-gray-100 transition-all"
-          >
-            Continue with Google
-          </button>
-        </div>
-
         {/* Already have account */}
         <div className="w-full mt-4 text-center">
           <p className="text-gray-300 text-sm">
